@@ -85,7 +85,7 @@ int PandemicSimulator::daycalculator(const int r, const int c) {
     int** visited = new int*[rows];
     for (int i = 0; i < rows; ++i) {
         visited[i] = new int[cols];
-        memset(visited[i], -1, sizeof(int) * cols); 
+        memset(visited[i], -1, sizeof(int) * cols);
     }
 
     queue<pair<int, int>> q;
