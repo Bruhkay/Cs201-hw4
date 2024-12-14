@@ -15,7 +15,7 @@ class PandemicSimulator{
 
     void displayCityState(const int time);
     void simulateBlock(const int row, const int col);
-    void siulatePandemic();
+    void simulatePandemic();
 
   private:
     int **matrix;
