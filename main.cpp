@@ -1,6 +1,9 @@
 #include <iostream>
+#include "PandemicSimulator.h"
+using namespace std;
+
 
 int main() {
-    std::cout << "Hello World!\n";
+    PandemicSimulator ps ( "cityGridFile.txt" );
     return 0;
 }
