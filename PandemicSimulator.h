@@ -17,9 +17,11 @@ class PandemicSimulator{
     void simulateBlock(const int row, const int col);
     void simulatePandemic();
 
+    int daycalculator(const int r, const int c);
+
   private:
     int **matrix;
-    int row, col;
+    int rows, cols;
 
 };
 #endif //PANDEMICSIMULATOR_H
