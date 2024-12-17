@@ -1,13 +1,37 @@
 #include "PandemicSimulator.h"
 #include <iostream>
 #include <fstream>
-#include <queue>
-#include <cstring> // For memset
 using namespace std;
 
-// Constructor
+struct Point {
+    int x; // Row index
+    int y; // Col index
+};
+
+struct Queue {
+    Point data[1000]; //capacity of queue
+    int front, rear;
+
+    Queue() : front(0), rear(0) {}
+
+    bool empty() {
+        return front == rear;
+    }
+
+    void push(Point p) {
+        data[rear++] = p;
+    }
+
+    Point pop() {
+        return data[front++];
+    }
+
+    Point peek() {
+        return data[front];
+    }
+};
 PandemicSimulator::PandemicSimulator(const string cityGridFile) {
-    ifstream file("/Users/burkay/Documents/Github/Cs201-hw4/cityGridFile.txt");
+    ifstream file(cityGridFile);
     if (!file.is_open()) {
         cerr << "Failed to open the file: " << cityGridFile << endl;
         return;
@@ -42,37 +66,24 @@ PandemicSimulator::~PandemicSimulator() {
 
 void PandemicSimulator::displayCityState(const int time) {
     cout << "City state at day " << time << ":\n";
-    int** temp = new int*[rows];
-    for (int i = 0; i < rows; ++i) {
-        temp[i] = new int[cols];
-    }
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
-            if (daycalculator(i, j) == 0) {
-                temp[i][j] = 2;
-            }
-            else if (daycalculator(i, j) == -1) {
-                temp[i][j] = 0;
-            }
-            else if (daycalculator(i, j) <= time ) {
-                temp[i][j] = 2;
-            }
-            else {
-                temp[i][j] = 1;
-            }
-        }
-    }
 
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
-            cout << temp[i][j];
+            if (matrix[i][j] == 0) {
+                cout << "0";
+            }
+            else if (matrix[i][j] == 1 && daycalculator(i,j) ==-1) {
+                cout << "1";
+            }
+            else if (matrix[i][j] ==2 || daycalculator(i,j)<= time) {
+                cout << "2";
+            }
+            else {
+                cout << "1";
+            }
         }
         cout << endl;
     }
-    for (int i = 0; i < rows; ++i) {
-        delete[] temp[i];
-    }
-    delete[] temp;
 }
 int PandemicSimulator::daycalculator(const int r, const int c) {
     if (matrix[r][c] == 0) {
@@ -85,10 +96,12 @@ int PandemicSimulator::daycalculator(const int r, const int c) {
     int** visited = new int*[rows];
     for (int i = 0; i < rows; ++i) {
         visited[i] = new int[cols];
-        memset(visited[i], -1, sizeof(int) * cols);
+        for (int j = 0; j < cols; ++j) {
+            visited[i][j] = -1;
+        }
     }
 
-    queue<pair<int, int>> q;
+    Queue q;
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
             if (matrix[i][j] == 2) {
@@ -99,11 +112,16 @@ int PandemicSimulator::daycalculator(const int r, const int c) {
     }
 
     int directions[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-    while (!q.empty()) {
-        auto [x, y] = q.front();
-        q.pop();
+    int dir[2];
 
-        for (auto& dir : directions) {
+    while (!q.empty()) {
+        Point current = q.pop();
+        int x = current.x;
+        int y = current.y;
+
+        for (int i = 0; i < 4; ++i) {
+            dir[0] = directions[i][0];
+            dir[1] = directions[i][1];
             int nx = x + dir[0];
             int ny = y + dir[1];
 
@@ -135,30 +153,35 @@ void PandemicSimulator::simulateBlock(const int r, const int c) {
         return;
     }
 
-    // Use BFS to calculate the infection time
     int** visited = new int*[rows];
     for (int i = 0; i < rows; ++i) {
         visited[i] = new int[cols];
-        memset(visited[i], -1, sizeof(int) * cols); //-1 for unvisited
+        for (int j = 0; j < cols; ++j) {
+            visited[i][j] = -1;
+        }
     }
 
-    queue<pair<int, int>> q;
-    // Enqueue all initially infected blocks
+    Queue q;
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
             if (matrix[i][j] == 2) {
                 q.push({i, j});
-                visited[i][j] = 0; // Start day for infection
+                visited[i][j] = 0;
             }
         }
     }
 
     int directions[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-    while (!q.empty()) {
-        auto [x, y] = q.front();
-        q.pop();
+    int dir[2];
 
-        for (auto& dir : directions) {
+    while (!q.empty()) {
+        Point current = q.pop();
+        int x = current.x;
+        int y = current.y;
+
+        for (int i = 0; i < 4; ++i) {
+            dir[0] = directions[i][0];
+            dir[1] = directions[i][1];
             int nx = x + dir[0];
             int ny = y + dir[1];
 
@@ -179,14 +202,15 @@ void PandemicSimulator::simulateBlock(const int r, const int c) {
 
 
 void PandemicSimulator::simulatePandemic() {
+    
     int** visited = new int*[rows];
     for (int i = 0; i < rows; ++i) {
         visited[i] = new int[cols];
-        memset(visited[i], -1, sizeof(int) * cols);
+        for (int j = 0; j < cols; ++j) {
+            visited[i][j] = -1;
+        }
     }
-
-    queue<pair<int, int>> q;
-
+    Queue q;
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
             if (matrix[i][j] == 2) {
@@ -196,14 +220,18 @@ void PandemicSimulator::simulatePandemic() {
         }
     }
 
-    int directions[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
     int maxDays = 0;
+    int directions[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    int dir[2];
 
     while (!q.empty()) {
-        auto [x, y] = q.front();
-        q.pop();
+        Point current = q.pop();
+        int x = current.x;
+        int y = current.y;
 
-        for (auto& dir : directions) {
+        for (int i = 0; i < 4; ++i) {
+            dir[0] = directions[i][0];
+            dir[1] = directions[i][1];
             int nx = x + dir[0];
             int ny = y + dir[1];
 
@@ -236,3 +264,4 @@ void PandemicSimulator::simulatePandemic() {
     }
     delete[] visited;
 }
+
