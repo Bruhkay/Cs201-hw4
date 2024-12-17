@@ -15,11 +15,13 @@ class PandemicSimulator{
 
     void displayCityState(const int time);
     void simulateBlock(const int row, const int col);
-    void siulatePandemic();
+    void simulatePandemic();
+
+    int daycalculator(const int r, const int c);
 
   private:
     int **matrix;
-    int row, col;
+    int rows, cols;
 
 };
 #endif //PANDEMICSIMULATOR_H
